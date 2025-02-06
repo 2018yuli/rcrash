@@ -1,14 +1,18 @@
 
 fn main() {
-    // 1 + 2 + ... + 100
-    let mut sum = 0;
-    let mut num = 1;
-    let result = loop {
-        sum += num;
-        num += 1;
-        if num > 100 {
-            break sum;
-        }
-    };
-    println!("1 + 2 + ... + 100 = {}", result);
+   // fizz buzz
+   let mut num =1;
+   while num < 101 {
+    if num %15 == 0 {
+        println!("fizz buzz")
+    }
+    else if num % 3 == 0 {
+        println!("fizz")
+    } else if num % 5 == 0 {
+        println!("buzz");
+    } else {
+        println!("{}", num)
+    }
+    num += 1;
+   }
 }
