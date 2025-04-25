@@ -7,6 +7,7 @@ fn largest1(a: u32, b: u32) -> u32 {
     }
 }
 
+// 总是使用 T 做为泛型的类型，代表 Type
 fn largest<T: std::cmp::PartialOrd>(a: T, b: T) -> T {
     if a > b {
         a
