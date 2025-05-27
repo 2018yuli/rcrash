@@ -33,10 +33,10 @@ fn main() {
     }
 
     // 迭代操作2
-    let mut idx = 0;
+    let mut v1_idx = 0;
     for e in v1.iter() {
-        print!("v1[{:?}] = {:?} \t", idx, *e);
-        idx+=1;
+        print!("v1[{:?}] = {:?} \t", v1_idx, *e);
+        v1_idx+=1;
     }
     println!("");
 
