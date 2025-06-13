@@ -1,25 +1,43 @@
-use std::time::{Duration, SystemTime};
-use std::thread::sleep;
+
+/*
+socks5Proxy -l 127.0.0.1
+./target/debug/rcrash -l 127.0.0.1:8080
+curl --socks5-hostname 127.0.0.1:1080 baidu.com
+*/
+
+fn hand(src_stream: &std::net::TcpStream) -> Result<(), Box<(dyn std::error::Error)>> {
+    println!("src {}", src_stream.peer_addr().unwrap());
+    Ok(())
+}
 
 fn main() {
-    
-    // SystemTime 是系统时间
-    // 通过系统调用请求操作系统返回的系统时间
-    let now = SystemTime::now();
-    println!("now = {:?}", now);
-    // println!("now.tv_sec = {}", now.tv_sec);
+    let mut c_listener = String::from("127.0.0.1:1080");
+    {
+        let mut ap = argparse::ArgumentParser::new();
+        ap.set_description("Sockets5 Proxy");
+        ap.refer(&mut c_listener).add_option(&["-l", "--listen"], argparse::Store, "listen address");
+        ap.parse_args_or_exit();
+    }
 
-    // timestamp 是从 1970年1月1日到现在的秒数
-    let timestamp = now.duration_since(SystemTime::UNIX_EPOCH).unwrap();
-    println!("timestamp = {:?}", timestamp);
+    println!("Lisen and server on {}", c_listener);
 
-    sleep(Duration::from_secs(4));
+    let listener = std::net::TcpListener::bind(c_listener.as_str()).unwrap();
 
-    // ela 航运术语：船，从一个港口出发，到另一个港口的时间
-    println!("ela = {:?}", now.elapsed().unwrap());
-
-    let future = now.checked_add(Duration::from_secs(60));
-    println!("future = {:?}", future);
-    println!("future = {:?}", future.unwrap().duration_since(SystemTime::UNIX_EPOCH).unwrap());
+    // 接收链接
+    for stream in listener.incoming() {
+        match stream {
+            Ok(data) => {
+                // 启动一个线程来处理 TCP 的链接
+                std::thread::spawn(move || {
+                    if let Err(err) = hand(&data) {
+                        println!("error: {:?}", err);
+                    }
+                });
+            },
+            Err(err) => {
+                println!("error: {:?}", err);
+            }
+        }
+    }
 
 }
