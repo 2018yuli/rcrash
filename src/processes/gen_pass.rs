@@ -55,7 +55,8 @@ pub fn process_generate_password(
 
     // 打印密码强度
     let estimate = zxcvbn(&password, &[]);
-    println!("strength: {}", estimate.score());
+    // 打印到 stderr 中，便于 pipeline 纯净输出
+    eprintln!("strength: {}", estimate.score());
 
     Ok(())
 }
