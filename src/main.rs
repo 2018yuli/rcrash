@@ -6,6 +6,8 @@
 use std::path::Path;
 
 use clap::Parser;
+use csv::Reader;
+use serde::{Deserialize, Serialize};
 
 /*
 描述命令行中的 根命令 的参数
@@ -41,6 +43,18 @@ pub struct CsvOpts {
     header: bool,
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "PascalCase")]
+struct Player {
+    name: String,
+    position: String,
+    #[serde(rename = "DOB")]
+    dob: String,
+    nationality: String,
+    #[serde(rename = "Kit Number")]
+    kit_number: u32,
+}
+
 fn verify_input_file(filename : &str) -> Result<String, &'static str> {
     if Path::new(filename).exists() {
         Ok(filename.into())
@@ -49,7 +63,21 @@ fn verify_input_file(filename : &str) -> Result<String, &'static str> {
     }
 }
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     let opts = Opts::parse();
-    println!("{:?}", opts);
+    match opts.cmd {
+        SubCommand::Csv(opts) => {
+            // 加入 anyhow 之后，? 任何的 Err 都可以转换为 anyhow::Error
+            let mut reader = Reader::from_path(opts.input)?;
+            // let players = reader
+            //     .deserialize()
+            //     .map(|record| record.unwrap())
+            //     .collect::<Vec<Player>>();
+            for result in reader.deserialize() {
+                let player: Player = result?;
+                println!("{:?}", player);
+            }
+        },
+    }
+    Ok(())
 }
