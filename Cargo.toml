@@ -3,6 +3,7 @@ name = "rcrash"
 version = "0.1.0"
 edition = "2021"
 authors = ["l898974766 <l898974766@outlook.com>"]
+license = "MIT"
 
 [dependencies]
 anyhow = "1.0.98"
