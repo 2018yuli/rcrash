@@ -1,7 +1,6 @@
-use std::fs::File;
-use serde::Deserialize;
 use csv::ReaderBuilder;
-
+use serde::Deserialize;
+use std::fs::File;
 
 #[derive(Debug, Deserialize)]
 struct Player {
@@ -19,7 +18,7 @@ struct Player {
 
 mod tests {
     use super::*;
-    use std::io::{Cursor};
+    use std::io::Cursor;
     use std::path::Path;
 
     #[test]
@@ -35,7 +34,7 @@ mod tests {
 
         // Iterate over each record in the CSV.
         let mut records = rdr.deserialize::<Player>();
-        
+
         // First record (Wojciech Szczesny)
         let record: Player = records.next().unwrap().unwrap();
         assert_eq!(record.name, "Wojciech Szczesny");
@@ -51,7 +50,6 @@ mod tests {
         assert_eq!(record.dob, "Nov 10, 1992 (26)");
         assert_eq!(record.nationality, "Italy");
         assert_eq!(record.kit_number, 37);
-
     }
 
     #[test]
@@ -60,10 +58,10 @@ mod tests {
         let mut rdr = csv::Reader::from_reader(Cursor::new(data));
 
         let records: Vec<_> = rdr.records().collect::<Result<_, _>>().unwrap();
-        
+
         assert_eq!(records[0].get(0), Some("Alice"));
         assert_eq!(records[0].get(1), Some("30"));
-        
+
         assert_eq!(records[1].get(0), Some("Bob"));
         assert_eq!(records[1].get(1), Some("25"));
     }
@@ -72,21 +70,21 @@ mod tests {
     fn test_empty_csv() {
         let data = b"";
         let mut rdr = csv::Reader::from_reader(Cursor::new(data));
-        
+
         let records: Vec<_> = rdr.records().collect::<Result<_, _>>().unwrap();
-        
+
         assert!(records.is_empty(), "Expected no records");
     }
 
     #[test]
     fn test_csv_with_custom_delimiter() {
         let data = b"name|age\nAlice|30\nBob|25\n";
-        
+
         let mut rdr = ReaderBuilder::new()
-            .has_headers(true)  // Indicates that the first row contains the header
-            .delimiter(b'|')    // Custom delimiter: '|'
+            .has_headers(true) // Indicates that the first row contains the header
+            .delimiter(b'|') // Custom delimiter: '|'
             .from_reader(Cursor::new(data));
-        
+
         // Get headers
         let headers = rdr.headers().unwrap();
         assert_eq!(headers.get(0), Some("name"));
@@ -94,13 +92,11 @@ mod tests {
 
         // Read the records (data rows)
         let records: Vec<_> = rdr.records().collect::<Result<_, _>>().unwrap();
-        
+
         assert_eq!(records[0].get(0), Some("Alice"));
         assert_eq!(records[0].get(1), Some("30"));
-        
+
         assert_eq!(records[1].get(0), Some("Bob"));
         assert_eq!(records[1].get(1), Some("25"));
     }
 }
-
-

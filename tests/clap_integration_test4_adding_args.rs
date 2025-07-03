@@ -46,7 +46,6 @@ struct CliDefault {
     port: u16,
 }
 
-
 mod tests {
 
     use super::*;
@@ -74,7 +73,7 @@ mod tests {
 
         let args = CliOptionDerive::try_parse_from(["", "-n", "bob"]).unwrap();
         assert_eq!(args.name, "bob");
-        
+
         let args = CliOptionDerive::try_parse_from(["", "-n=bob"]).unwrap();
         assert_eq!(args.name, "bob");
 
@@ -87,11 +86,15 @@ mod tests {
         let args = CliOptionMultDerive::try_parse_from(["", "--name", "bob"]).unwrap();
         assert_eq!(args.name[0], "bob");
 
-        let args = CliOptionMultDerive::try_parse_from(["", "--name", "bob", "--name", "john"]).unwrap();
+        let args =
+            CliOptionMultDerive::try_parse_from(["", "--name", "bob", "--name", "john"]).unwrap();
         assert_eq!(args.name[0], "bob");
         assert_eq!(args.name[1], "john");
 
-        let args = CliOptionMultDerive::try_parse_from(["", "--name", "bob", "--name", "john", "-n", "tom", "-n=chris", "-nsteve"]).unwrap();
+        let args = CliOptionMultDerive::try_parse_from([
+            "", "--name", "bob", "--name", "john", "-n", "tom", "-n=chris", "-nsteve",
+        ])
+        .unwrap();
         assert_eq!(args.name[0], "bob");
         assert_eq!(args.name[1], "john");
         assert_eq!(args.name[2], "tom");
@@ -125,5 +128,4 @@ mod tests {
         let args = CliDefault::try_parse_from(["", "22"]).unwrap();
         assert_eq!(args.port, 22);
     }
-
 }

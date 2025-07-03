@@ -17,15 +17,15 @@ struct Args {
 
 #[cfg(test)]
 mod tests {
-    use super::*;  // 引入主函数中的所有代码
-    // use clap::CommandFactory; // 用于验证命令行解析
+    use super::*; // 引入主函数中的所有代码
+                  // use clap::CommandFactory; // 用于验证命令行解析
 
     // 测试命令行参数解析
     #[test]
     fn test_args_parsing() {
         // 模拟命令行参数
         let args = Args::try_parse_from(["", "--name", "Alice", "--count", "3"]).unwrap();
-        
+
         // 验证解析后的参数
         assert_eq!(args.name, "Alice");
         assert_eq!(args.count, 3);
@@ -35,7 +35,7 @@ mod tests {
     #[test]
     fn test_default_count() {
         let args = Args::try_parse_from(["", "--name", "Bob"]).unwrap();
-        
+
         // 验证默认值（count 默认是 1）
         assert_eq!(args.name, "Bob");
         assert_eq!(args.count, 1);

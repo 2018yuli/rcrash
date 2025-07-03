@@ -2,7 +2,6 @@ use std::{fmt, path::Path, str::FromStr};
 
 use clap::Parser;
 
-
 /*
 描述命令行中的 根命令 的参数
 */
@@ -18,10 +17,10 @@ SubCommand 是一个枚举类型，表示所有的子命令。这个例子中只
 */
 #[derive(Debug, Parser)]
 pub enum SubCommandRandom {
-    #[command(name="csv", about="Show CSV, or convert CSV to other formats")]
+    #[command(name = "csv", about = "Show CSV, or convert CSV to other formats")]
     Csv(CsvOptsRandom),
 
-    #[command(name="gen-password", about="Generate a password")]
+    #[command(name = "gen-password", about = "Generate a password")]
     GenPassword(GenPasswordOpts),
 }
 
@@ -37,7 +36,7 @@ pub struct CsvOptsRandom {
     #[arg(short, long, value_parser = parse_formart, default_value="json")]
     pub format: OutputFormatRandom,
 
-    #[arg(short, long, default_value=",")]
+    #[arg(short, long, default_value = ",")]
     pub delimiter: String,
 
     #[arg(short = 'a', long, default_value_t = true)]
@@ -46,19 +45,19 @@ pub struct CsvOptsRandom {
 
 #[derive(Debug, Parser)]
 pub struct GenPasswordOpts {
-    #[arg(short, long, default_value="12")]
+    #[arg(short, long, default_value = "12")]
     pub length: u8,
 
-    #[arg(long, default_value_t=true)]
+    #[arg(long, default_value_t = true)]
     pub uppercase: bool,
 
-    #[arg(long, default_value_t=true)]
+    #[arg(long, default_value_t = true)]
     pub lowercase: bool,
 
-    #[arg(long, default_value_t=true)]
+    #[arg(long, default_value_t = true)]
     pub numbers: bool,
 
-    #[arg(long, default_value_t=true)]
+    #[arg(long, default_value_t = true)]
     pub symbols: bool,
 }
 
@@ -69,7 +68,7 @@ pub enum OutputFormatRandom {
     Toml,
 }
 
-fn verify_input_file(filename : &str) -> Result<String, &'static str> {
+fn verify_input_file(filename: &str) -> Result<String, &'static str> {
     if Path::new(filename).exists() {
         Ok(filename.into())
     } else {

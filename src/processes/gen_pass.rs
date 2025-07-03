@@ -8,11 +8,11 @@ const NUMBERS: &[u8] = b"123456789";
 const SYMBOLS: &[u8] = b"!@#$%^&*_";
 
 pub fn process_generate_password(
-    length: u8, 
-    upper: bool, 
-    lower: bool, 
-    numbers: bool, 
-    symbols: bool
+    length: u8,
+    upper: bool,
+    lower: bool,
+    numbers: bool,
+    symbols: bool,
 ) -> anyhow::Result<()> {
     let mut rng = rand::rng();
     let mut password = Vec::new();

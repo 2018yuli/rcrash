@@ -13,7 +13,7 @@ struct Cli {
     /// 该参数为可选项，类型是 `Option<PathBuf>`，用于存储文件路径
     /// `-c` 或 `--config` 参数，用户可以传入一个文件路径
     /// 配置文件的路径，默认值是 `None`，表示没有配置文件
-    #[arg(short, long, value_name = "FILE")]  
+    #[arg(short, long, value_name = "FILE")]
     config: Option<PathBuf>,
 
     /// 定义 `debug` 参数，用于控制调试信息的输出级别
@@ -44,10 +44,9 @@ enum Commands {
     },
 }
 
-
 #[cfg(test)]
 mod tests {
-    use super::*; 
+    use super::*;
 
     #[test]
     fn test_no_name_no_config() {
@@ -55,7 +54,7 @@ mod tests {
         let args = Cli::try_parse_from(["", "--debug"]).unwrap();
 
         // 检查解析结果中是否包含预期的输出
-        let result = format!("Debug mode is kind of on"); 
+        let result = format!("Debug mode is kind of on");
         println!("args.debug = {}", args.debug);
         if args.debug == 1 {
             assert_eq!(result, "Debug mode is kind of on");
@@ -84,7 +83,7 @@ mod tests {
     #[test]
     fn test_with_config() {
         // 使用 `Cli::try_parse_from` 模拟命令行输入，传递 `--config` 参数
-        let config_path = "config.toml";  // 模拟一个 config 文件路径
+        let config_path = "config.toml"; // 模拟一个 config 文件路径
         let args = Cli::try_parse_from(["", "--config", config_path, "--debug"]).unwrap();
 
         // 检查解析结果中是否包含预期的输出

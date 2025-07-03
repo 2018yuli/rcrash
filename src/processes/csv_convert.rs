@@ -3,7 +3,6 @@ use std::fs;
 use csv::Reader;
 use serde::{Deserialize, Serialize};
 
-
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase")]
 struct Player {
