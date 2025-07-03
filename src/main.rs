@@ -13,7 +13,7 @@ mod opts;
 // mod process;
 // use crate::{opts::{Opts, SubCommand}, process::process_csv};
 
-// using lib.rs
+// using lib.rs,
 use rcrash::{process_csv_common, process_generate_password, Opts, SubCommand};
 
 fn main() -> anyhow::Result<()> {
