@@ -51,7 +51,7 @@ pub fn process_generate_password(
     // from_utf8_lossy: 将 &[u8] 类型的字节数组转换成 String，如果有非法 UTF-8 字节，就用 �（U+FFFD）代替
     let password = String::from_utf8(password)?;
 
-    println!("{}", password);
+    println!("{password}");
 
     // 打印密码强度
     let estimate = zxcvbn(&password, &[]);
