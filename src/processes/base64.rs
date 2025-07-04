@@ -1,8 +1,6 @@
-use std::{fs::File, io::Read};
-
 use base64::prelude::*;
 
-use crate::cli::Base64Format;
+use crate::{cli::Base64Format, utils::read_input};
 
 pub fn process_encode(input: &str, format: Base64Format) -> anyhow::Result<()> {
     let buf = read_input(input)?;
@@ -33,16 +31,4 @@ pub fn process_decode(input: &str, format: Base64Format) -> anyhow::Result<()> {
         ),
     }
     Ok(())
-}
-
-fn read_input(input: &str) -> anyhow::Result<Vec<u8>> {
-    let mut reader: Box<dyn Read> = if input == "-" {
-        Box::new(std::io::stdin())
-    } else {
-        Box::new(File::open(input)?)
-    };
-
-    let mut buf = Vec::new();
-    reader.read_to_end(&mut buf)?;
-    Ok(buf)
 }

@@ -1,7 +1,7 @@
 use clap::Parser;
 
 use super::enums::Base64Format;
-use super::verify_input_file;
+use super::verify_file;
 
 #[derive(Debug, Parser)]
 pub enum Base64SubCommand {
@@ -13,7 +13,7 @@ pub enum Base64SubCommand {
 
 #[derive(Debug, Parser)]
 pub struct EncodeOpts {
-    #[arg(long, value_parser=verify_input_file, default_value="-",  help = "The string to encode")]
+    #[arg(long, value_parser=verify_file, default_value="-",  help = "The string to encode")]
     pub input: String,
     #[arg(long, value_parser = parse_base64_formart, default_value = "standard")]
     pub format: Base64Format,
@@ -21,7 +21,7 @@ pub struct EncodeOpts {
 
 #[derive(Debug, Parser)]
 pub struct DecodeOpts {
-    #[arg(long, value_parser=verify_input_file, default_value="-", help = "The base64 string to decode")]
+    #[arg(long, value_parser=verify_file, default_value="-", help = "The base64 string to decode")]
     pub input: String,
     #[arg(long, value_parser = parse_base64_formart, default_value = "uri")]
     pub format: Base64Format,

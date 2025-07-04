@@ -7,6 +7,24 @@ pub enum OutputFormat {
     Toml,
 }
 
+#[derive(Debug, Clone)]
+pub enum Base64Format {
+    Standard,
+    Uri,
+}
+
+#[derive(Debug, Clone)]
+pub enum TextSignFormat {
+    Blake3,
+    Ed25519,
+}
+
+/// ######################## Common Trails ########################
+
+///
+/// eg:
+///     let format: &str = OutputFormat::Json.into();
+///
 impl From<OutputFormat> for &'static str {
     fn from(format: OutputFormat) -> Self {
         match format {
@@ -17,6 +35,12 @@ impl From<OutputFormat> for &'static str {
     }
 }
 
+///
+/// FromStr 是标准库 (std::str::FromStr) 中的一个 trait
+/// 用于定义如何从字符串切片创建某种类型的值
+/// eg:
+///   let format: OutputFormat = "json".parse()?;
+///
 impl FromStr for OutputFormat {
     type Err = anyhow::Error;
 
@@ -36,12 +60,6 @@ impl fmt::Display for OutputFormat {
     }
 }
 
-#[derive(Debug, Clone)]
-pub enum Base64Format {
-    Standard,
-    Uri,
-}
-
 impl From<Base64Format> for &'static str {
     fn from(format: Base64Format) -> Self {
         match format {
@@ -59,6 +77,27 @@ impl FromStr for Base64Format {
             "standard" => Ok(Base64Format::Standard),
             "uri" => Ok(Base64Format::Uri),
             _ => anyhow::bail!("Invalid format"),
+        }
+    }
+}
+
+impl FromStr for TextSignFormat {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "blake3" => Ok(TextSignFormat::Blake3),
+            "ed25519" => Ok(TextSignFormat::Ed25519),
+            _ => anyhow::bail!("Invalid format"),
+        }
+    }
+}
+
+impl From<TextSignFormat> for &'static str {
+    fn from(format: TextSignFormat) -> Self {
+        match format {
+            TextSignFormat::Blake3 => "blake3",
+            TextSignFormat::Ed25519 => "ed25519",
         }
     }
 }

@@ -6,6 +6,7 @@ mod base64;
 mod csv;
 mod enums;
 mod genpass;
+mod text;
 
 // tests
 mod mod_test;
@@ -13,6 +14,7 @@ mod mod_test;
 pub use self::base64::Base64SubCommand;
 use self::csv::CsvOpts;
 use self::genpass::GenPasswordOpts;
+pub use self::text::TextSubCommand;
 
 pub use enums::*;
 
@@ -39,9 +41,12 @@ pub enum SubCommand {
 
     #[command(subcommand)]
     Base64(Base64SubCommand),
+
+    #[command(subcommand)]
+    Text(TextSubCommand),
 }
 
-fn verify_input_file(filename: &str) -> Result<String, &'static str> {
+fn verify_file(filename: &str) -> Result<String, &'static str> {
     if filename == "-" || Path::new(filename).exists() {
         Ok(filename.into())
     } else {
