@@ -6,7 +6,7 @@ fn main() {
     let script = r#"
         print("hello");
         function hello(a, b) {
-            return fetch("https://www.rust-lang.org/");
+            return fetch("https://www.baidu.com/");
         }
         hello();
     "#;

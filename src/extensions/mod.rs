@@ -1,13 +1,34 @@
 mod fetch;
 mod print;
 
-use v8::HandleScope;
+use lazy_static::lazy_static;
+use v8::{ExternalReference, HandleScope, MapFnTo};
 
 use crate::execute_script;
 
 const GLUE: &str = include_str!("glue.js");
 
 pub struct Extensions;
+
+pub struct MyExternalRefs {
+    pub refs: &'static [ExternalReference],
+}
+
+// ⚠️ 确保不在多个线程写裸指针！
+unsafe impl Sync for MyExternalRefs {}
+
+lazy_static! {
+    pub static ref EXTERNAL_REFERENCE: MyExternalRefs = MyExternalRefs {
+        refs: Box::leak(Box::new([
+            ExternalReference {
+                function: MapFnTo::map_fn_to(print::print),
+            },
+            ExternalReference {
+                function: MapFnTo::map_fn_to(fetch::fetch),
+            },
+        ])),
+    };
+}
 
 impl Extensions {
     pub fn install(scope: &mut HandleScope) {

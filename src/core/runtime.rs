@@ -1,7 +1,12 @@
+use std::borrow::Cow;
+
 use super::state::JsRuntimeState;
-use crate::{extensions::Extensions, utils::execute_script};
+use crate::{
+    extensions::{Extensions, EXTERNAL_REFERENCE},
+    utils::execute_script,
+};
 use once_cell::sync::OnceCell;
-use v8::{CreateParams, HandleScope, Isolate, OwnedIsolate, V8};
+use v8::{CreateParams, FunctionCodeHandling, HandleScope, Isolate, OwnedIsolate, V8};
 
 #[derive(Debug)]
 pub struct JsRuntime {
@@ -14,15 +19,29 @@ pub struct JsRuntime {
 ///     所以它实际上是一个元组结构体
 ///
 #[derive(Debug, Default)]
-pub struct JsRuntimeOptions(CreateParams);
+pub struct JsRuntimeOptions {
+    pub params: CreateParams,
+    pub snapshot_support: bool,
+}
 
 impl JsRuntimeOptions {
-    pub fn new(_snapshot: Option<Vec<u8>>) -> Self {
-        JsRuntimeOptions(CreateParams::default())
+    pub fn new(snapshot: Option<Vec<u8>>) -> Self {
+        let (params, support) = match snapshot {
+            Some(snapshot_data) => (
+                CreateParams::default().snapshot_blob(snapshot_data.into()),
+                true,
+            ),
+            None => (CreateParams::default(), false),
+        };
+
+        JsRuntimeOptions {
+            params,
+            snapshot_support: support,
+        }
     }
     // 用于获取结构体中的内部数据
     pub fn into_inner(self) -> CreateParams {
-        self.0
+        self.params
     }
 }
 
@@ -36,8 +55,19 @@ impl JsRuntime {
         });
     }
     pub fn new(params: JsRuntimeOptions) -> Self {
-        let isolate = Isolate::new(params.into_inner());
-        JsRuntime::init_isolate(isolate)
+        let (isolate, initialized) = if params.snapshot_support {
+            (
+                Isolate::snapshot_creator(
+                    Some(Cow::Borrowed(EXTERNAL_REFERENCE.refs)),
+                    Some(params.into_inner()),
+                ),
+                true,
+            )
+        } else {
+            (Isolate::new(params.into_inner()), false)
+        };
+
+        JsRuntime::init_isolate(isolate, initialized)
     }
     pub fn execute_script(
         &mut self,
@@ -50,13 +80,27 @@ impl JsRuntime {
             Err(e) => Err(serde_v8::from_v8(handle_scope, e).unwrap()),
         }
     }
-    pub fn create_snapshot(&self) -> Vec<u8> {
-        todo!();
+    pub fn create_snapshot() -> Vec<u8> {
+        JsRuntime::init();
+        let isolate = Isolate::snapshot_creator(
+            Some(Cow::Borrowed(EXTERNAL_REFERENCE.refs)),
+            Some(CreateParams::default()),
+        );
+        let mut runtime = JsRuntime::init_isolate(isolate, false);
+        JsRuntimeState::drop_context(&mut runtime.isolate);
+
+        let startup_data = runtime
+            .isolate
+            .create_blob(FunctionCodeHandling::Clear)
+            .expect("快照创建失败");
+        startup_data.to_vec()
     }
-    fn init_isolate(mut isolate: OwnedIsolate) -> Self {
+    fn init_isolate(mut isolate: OwnedIsolate, initialized: bool) -> Self {
         let state = JsRuntimeState::new(&mut isolate);
         isolate.set_slot(state);
-        {
+
+        println!("initialized: {initialized:?}");
+        if !initialized {
             let context = JsRuntimeState::get_context(&mut isolate);
             let scope = &mut HandleScope::with_context(&mut isolate, context);
             Extensions::install(scope);
