@@ -35,14 +35,15 @@ fn build_snapshot() {
 }
 
 fn run_snapshot() {
+    JsRuntime::init();
     let blob = fs::read(SS_FILE).unwrap();
     let mut runtime = JsRuntime::new(JsRuntimeOptions::new(Some(blob)));
     let script = r#"
         print("hello");
         function hello(a, b) {
-            return fetch("https://www.rust-lang.org/");
+            return "hello " + a + " " + b;
         }
-        hello();
+        hello(1, 2);
     "#;
     let result = runtime.execute_script(script).unwrap();
     println!("Result is {result:?}");

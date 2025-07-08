@@ -9,12 +9,14 @@ pub struct JsRuntimeState {
 }
 
 impl JsRuntimeState {
-    pub fn new(isolate: &mut Isolate) -> JsRuntimeStateRef {
+    pub fn new(isolate: &mut Isolate, snapshot: bool) -> JsRuntimeStateRef {
         // 创建默认 Context
         let context = {
             let handle_scope = &mut v8::HandleScope::new(isolate);
             let context = v8::Context::new(handle_scope, ContextOptions::default());
-            handle_scope.set_default_context(context);
+            if snapshot {
+                handle_scope.set_default_context(context);
+            }
             let global = v8::Global::new(handle_scope, context);
             global
         };

@@ -28,7 +28,9 @@ impl JsRuntimeOptions {
     pub fn new(snapshot: Option<Vec<u8>>) -> Self {
         let (params, support) = match snapshot {
             Some(snapshot_data) => (
-                CreateParams::default().snapshot_blob(snapshot_data.into()),
+                CreateParams::default()
+                    .snapshot_blob(snapshot_data.into())
+                    .external_references(Cow::Borrowed(EXTERNAL_REFERENCE.refs)),
                 true,
             ),
             None => (CreateParams::default(), false),
@@ -55,19 +57,20 @@ impl JsRuntime {
         });
     }
     pub fn new(params: JsRuntimeOptions) -> Self {
-        let (isolate, initialized) = if params.snapshot_support {
-            (
-                Isolate::snapshot_creator(
-                    Some(Cow::Borrowed(EXTERNAL_REFERENCE.refs)),
-                    Some(params.into_inner()),
-                ),
-                true,
-            )
-        } else {
-            (Isolate::new(params.into_inner()), false)
-        };
-
-        JsRuntime::init_isolate(isolate, initialized)
+        // let (isolate, initialized) = if params.snapshot_support {
+        //     (
+        //         Isolate::snapshot_creator(
+        //             Some(Cow::Borrowed(EXTERNAL_REFERENCE.refs)),
+        //             Some(params.into_inner()),
+        //         ),
+        //         true,
+        //     )
+        // } else {
+        //     (Isolate::new(params.into_inner()), false)
+        // };
+        let initialized = params.snapshot_support;
+        let isolate = Isolate::new(params.into_inner());
+        JsRuntime::init_isolate(isolate, initialized, false)
     }
     pub fn execute_script(
         &mut self,
@@ -86,7 +89,7 @@ impl JsRuntime {
             Some(Cow::Borrowed(EXTERNAL_REFERENCE.refs)),
             Some(CreateParams::default()),
         );
-        let mut runtime = JsRuntime::init_isolate(isolate, false);
+        let mut runtime = JsRuntime::init_isolate(isolate, false, true);
         JsRuntimeState::drop_context(&mut runtime.isolate);
 
         let startup_data = runtime
@@ -95,11 +98,10 @@ impl JsRuntime {
             .expect("快照创建失败");
         startup_data.to_vec()
     }
-    fn init_isolate(mut isolate: OwnedIsolate, initialized: bool) -> Self {
-        let state = JsRuntimeState::new(&mut isolate);
+    fn init_isolate(mut isolate: OwnedIsolate, initialized: bool, snapshot: bool) -> Self {
+        let state = JsRuntimeState::new(&mut isolate, snapshot);
         isolate.set_slot(state);
 
-        println!("initialized: {initialized:?}");
         if !initialized {
             let context = JsRuntimeState::get_context(&mut isolate);
             let scope = &mut HandleScope::with_context(&mut isolate, context);

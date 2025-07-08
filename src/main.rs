@@ -1,3 +1,4 @@
+// cargo run --bin rcrash
 use rcrash::{JsRuntime, JsRuntimeOptions};
 
 fn main() {
