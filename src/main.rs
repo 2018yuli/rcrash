@@ -8,6 +8,9 @@
 // cargo run base64 encode (回车  ctrl+D)
 // cargo run base64 encode --input Cargo.toml
 // cargo run base64 decode
+//
+// cargo run gen-password --length 32 > ./assets/key
+// cargo run text sig --key ./assets/key
 
 use clap::Parser;
 
@@ -18,7 +21,7 @@ use clap::Parser;
 // using lib.rs,
 use rcrash::{
     process_csv_common, process_decode, process_encode, process_generate_password, process_sign,
-    Base64SubCommand, Opts, SubCommand, TextSubCommand,
+    process_verify, Base64SubCommand, Opts, SubCommand, TextSubCommand,
 };
 
 fn main() -> anyhow::Result<()> {
@@ -45,7 +48,10 @@ fn main() -> anyhow::Result<()> {
         },
         SubCommand::Text(opts) => match opts {
             TextSubCommand::Sig(opts) => process_sign(&opts.input, &opts.key, opts.format)?,
-            TextSubCommand::Verify(opts) => unimplemented!(),
+            TextSubCommand::Verify(opts) => {
+                let success = process_verify(&opts.signed_file, &opts.key, opts.format)?;
+                println!("Verification result: {success}")
+            }
         },
     }
     Ok(())

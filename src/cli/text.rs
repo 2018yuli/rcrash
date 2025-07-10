@@ -12,7 +12,7 @@ pub enum TextSubCommand {
 
 #[derive(Debug, Parser)]
 pub struct TextSigOpts {
-    #[arg(long, value_parser=verify_file, help = "The path to the text file")]
+    #[arg(long, value_parser=verify_file, default_value="-", help = "The path to the text file")]
     pub input: String,
     #[arg(long, value_parser=verify_file, help = "The path to the private key")]
     pub key: String,
@@ -27,8 +27,17 @@ pub struct TextSigOpts {
 
 #[derive(Debug, Parser)]
 pub struct TextVerifyOpts {
-    #[arg(help = "The path to the signed text file")]
-    signed_file: String,
+    #[arg(long, help = "The path to the signed text file")]
+    pub signed_file: String,
+    #[arg(long, value_parser=verify_file, help = "The path to the private key")]
+    pub key: String,
+    #[arg(
+        long,
+        default_value = "blake3",
+        value_parser = parse_formart,
+        help = "The format of the key (e.g., Blake3)"
+    )]
+    pub format: TextSignFormat,
 }
 
 fn parse_formart(format: &str) -> anyhow::Result<TextSignFormat> {
