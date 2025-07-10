@@ -17,7 +17,7 @@ use clap::Parser;
 
 // using lib.rs,
 use rcrash::{
-    process_csv_common, process_decode, process_encode, process_generate_password,
+    process_csv_common, process_decode, process_encode, process_generate_password, process_sign,
     Base64SubCommand, Opts, SubCommand, TextSubCommand,
 };
 
@@ -44,7 +44,7 @@ fn main() -> anyhow::Result<()> {
             Base64SubCommand::Decode(opts) => process_decode(&opts.input, opts.format)?,
         },
         SubCommand::Text(opts) => match opts {
-            TextSubCommand::Sig(opts) => unimplemented!(),
+            TextSubCommand::Sig(opts) => process_sign(&opts.input, &opts.key, opts.format)?,
             TextSubCommand::Verify(opts) => unimplemented!(),
         },
     }
