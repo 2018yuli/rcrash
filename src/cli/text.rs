@@ -12,7 +12,7 @@ pub enum TextSubCommand {
 
 #[derive(Debug, Parser)]
 pub struct TextSigOpts {
-    #[arg(long, value_parser=verify_file, help = "The path to the text file")]
+    #[arg(long, value_parser=verify_file, default_value="-", help = "The path to the text file")]
     pub input: String,
     #[arg(long, value_parser=verify_file, help = "The path to the private key")]
     pub key: String,

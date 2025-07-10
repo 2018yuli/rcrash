@@ -8,6 +8,9 @@
 // cargo run base64 encode (回车  ctrl+D)
 // cargo run base64 encode --input Cargo.toml
 // cargo run base64 decode
+//
+// cargo run gen-password --length 32 > ./assets/key
+// cargo run text sig --key ./assets/key
 
 use clap::Parser;
 
