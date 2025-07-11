@@ -54,6 +54,7 @@ fn run_fibonacci_test(test_number: u32, iterations: u32) {
     println!("Total: {} ms", total_elapsed.as_millis());
 }
 
+#[allow(unused)]
 fn run_fibonacci_unre_test(test_number: u32, iterations: u32) {
     let mut runtime = JsRuntime::new(deno_core::RuntimeOptions {
         ..Default::default()

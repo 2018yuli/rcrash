@@ -15,6 +15,7 @@ tokio = { version = "1.46.1", features = ["rt"] }
 [workspace]
 
 [profile.release]
-opt-level = 3   # 最强的优化级别
-lto = true      # 启用链接时优化（LTO）
-panic = "abort" # 设置 panic 处理策略（避免额外的栈展开开销）
+opt-level = 3     # 最强的优化级别
+lto = true        # 启用链接时优化（LTO）
+panic = "abort"   # 设置 panic 处理策略（避免额外的栈展开开销）
+codegen-units = 1 # 限制代码生成单元数量
