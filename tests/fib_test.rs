@@ -163,14 +163,14 @@ mod tests {
         run_fibonacci_test(test_number, iterations);
     }
 
-    // Rust 调用 V8 引擎：Average time taken: 15.859703261 ms Total 15863 ms
+    // Rust 调用 V8 引擎：Average time taken: 0.015036749 ms Total 16 ms
     #[test]
-    fn run_fibonacci_unre_test() {
+    fn run_fibonacci_unre1_test() {
         let test_number = 30; // 计算第30个斐波那契数
         let iterations = 1000; // 重复测试次数
 
         // 调用性能测试函数，通过脚本，计算 fib(30)
-        run_fibonacci_test(test_number, iterations);
+        run_fibonacci_unre_test(test_number, iterations);
     }
 
     // Java 原生代码 Average time taken: 5 ms Total: 5741 ms
