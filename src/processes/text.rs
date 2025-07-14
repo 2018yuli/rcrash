@@ -1,29 +1,25 @@
-use std::fs;
+use std::{fs, path::Path, vec};
 
+use super::text_sign_verify_trait::{KeyLoader, TextSign, TextVerify};
+use crate::{
+    cli::TextSignFormat, process_generate_password,
+    processes::text_sign_verify_trait::KeyGenerator, utils::get_reader,
+};
 use anyhow::Ok;
 use base64::{prelude::BASE64_URL_SAFE_NO_PAD, Engine};
-use ed25519_dalek::{
-    ed25519::signature::{self, SignerMut},
-    Signature, SigningKey, VerifyingKey,
-};
+use ed25519_dalek::{ed25519::signature::SignerMut, Signature, SigningKey, VerifyingKey};
+use rand::rngs::OsRng;
 
-use super::text_sign_verify_trait::TextSign;
-use crate::{
-    cli::TextSignFormat,
-    processes::text_sign_verify_trait::TextVerify,
-    utils::{get_reader, read_input},
-};
-
-struct Blake3 {
+pub struct Blake3 {
     // u8 代表一个字节（byte），有 8 位二进制数据
-    key: [u8; 32],
+    pub key: [u8; 32],
 }
 
-struct Ed25519Signer {
-    key: SigningKey,
+pub struct Ed25519Signer {
+    pub key: SigningKey,
 }
-struct Ed25519Verifier {
-    key: VerifyingKey,
+pub struct Ed25519Verifier {
+    pub key: VerifyingKey,
 }
 
 pub fn process_sign<'a>(
@@ -35,16 +31,11 @@ pub fn process_sign<'a>(
 
     let signed = match format {
         TextSignFormat::Blake3 => {
-            let key = fs::read(key)?;
-            let key = &key[..32];
-            let key = key.try_into().unwrap();
-            let mut singer = Blake3 { key };
+            let mut singer = Blake3::load(key)?;
             singer.sign(&mut reader)?
         }
         TextSignFormat::Ed25519 => {
-            let key = read_input(key)?;
-            let key = SigningKey::from_bytes(key.as_slice().try_into()?);
-            let mut singer = Ed25519Signer { key };
+            let mut singer = Ed25519Signer::load(key)?;
             singer.sign(&mut reader)?
         }
     };
@@ -58,27 +49,102 @@ pub fn process_sign<'a>(
 
 pub fn process_verify<'a>(
     input: &'a str,
+    key: &'a str,
     signature: &'a str,
     format: TextSignFormat,
 ) -> anyhow::Result<bool> {
-    let input = BASE64_URL_SAFE_NO_PAD.decode(input)?;
-    let mut reader = get_reader(std::str::from_utf8(&input).unwrap())?;
+    // let input = BASE64_URL_SAFE_NO_PAD.decode(input)?;
+    let mut reader = get_reader(std::str::from_utf8(input.as_bytes()).unwrap())?;
 
     match format {
         TextSignFormat::Blake3 => {
-            let signature = fs::read(signature)?;
-            let signature = signature.try_into().unwrap();
-            let verifier = Blake3 { key: signature };
-            verifier.verify(&mut reader, &input)
+            let verifier = Blake3::load(key)?;
+            verifier.verify(&mut reader, signature.as_bytes())
         }
         TextSignFormat::Ed25519 => {
-            let signature = fs::read(signature)?;
-            let key = SigningKey::from_bytes(signature.as_slice().try_into()?);
-            let verifier = Ed25519Verifier {
-                key: key.verifying_key(),
-            };
-            verifier.verify(&mut reader, &input)
+            let verifier = Ed25519Verifier::load(key)?;
+            verifier.verify(&mut reader, signature.as_bytes())
         }
+    }
+}
+
+pub fn process_generate_key(output: &str, format: TextSignFormat) -> anyhow::Result<()> {
+    let key = match format {
+        TextSignFormat::Blake3 => Blake3::generate()?,
+        TextSignFormat::Ed25519 => Ed25519Signer::generate()?,
+    };
+
+    fs::write(output, &key[0])?;
+    Ok(())
+}
+
+impl Blake3 {
+    pub fn new(key: [u8; 32]) -> Self {
+        Self { key }
+    }
+    pub fn try_new(key: &[u8]) -> anyhow::Result<Self> {
+        let key = &key[..32];
+        let key = key.try_into()?;
+        let signature = Blake3::new(key);
+        Ok(signature)
+    }
+}
+
+impl KeyLoader for Blake3 {
+    fn load(path: impl AsRef<Path>) -> anyhow::Result<Self> {
+        let key = fs::read(path)?;
+        Blake3::try_new(&key)
+    }
+}
+
+impl KeyGenerator for Blake3 {
+    fn generate() -> anyhow::Result<Vec<Vec<u8>>> {
+        let key = process_generate_password(32, true, true, true, true)?;
+        let key = key.try_into()?;
+        Ok(vec![key])
+    }
+}
+
+impl Ed25519Signer {
+    pub fn new(key: SigningKey) -> Self {
+        Self { key }
+    }
+    pub fn try_new(key: &[u8]) -> anyhow::Result<Self> {
+        let key = SigningKey::from_bytes(key.try_into()?);
+        Ok(Ed25519Signer::new(key))
+    }
+}
+
+impl KeyLoader for Ed25519Signer {
+    fn load(path: impl AsRef<Path>) -> anyhow::Result<Self> {
+        let key = fs::read(path)?;
+        Ed25519Signer::try_new(&key)
+    }
+}
+
+impl KeyGenerator for Ed25519Signer {
+    fn generate() -> anyhow::Result<Vec<Vec<u8>>> {
+        let mut _csprng = OsRng;
+        // let sk: SigningKey = SigningKey::generate(&mut csprng);
+        // let sk = sk.to_bytes().to_vec();
+        Ok(vec![[0u8; 32].to_vec()])
+    }
+}
+
+impl Ed25519Verifier {
+    pub fn new(key: VerifyingKey) -> Self {
+        Self { key }
+    }
+    pub fn try_new(key: &[u8]) -> anyhow::Result<Self> {
+        let key = VerifyingKey::from_bytes(key.try_into()?)?;
+        Ok(Ed25519Verifier::new(key))
+    }
+}
+
+impl KeyLoader for Ed25519Verifier {
+    fn load(path: impl AsRef<Path>) -> anyhow::Result<Self> {
+        let key = fs::read(path)?;
+        Ed25519Verifier::try_new(&key)
     }
 }
 
@@ -103,9 +169,10 @@ impl TextVerify for Blake3 {
     fn verify(&self, mut reader: impl std::io::Read, signature: &[u8]) -> anyhow::Result<bool> {
         let mut buf = Vec::new();
         reader.read_to_end(&mut buf)?;
-        let hash = blake3::hash(&buf);
+        let hash = blake3::keyed_hash(&self.key, &buf);
         let hash = hash.as_bytes();
-        Ok(hash == signature)
+        let signed = BASE64_URL_SAFE_NO_PAD.encode(hash);
+        Ok(signed.as_bytes() == signature)
     }
 }
 

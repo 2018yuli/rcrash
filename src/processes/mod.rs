@@ -10,4 +10,4 @@ pub use base64::{process_decode, process_encode};
 pub use csv_convert::process_csv;
 pub use csv_convert_common::process_csv_common;
 pub use gen_pass::process_generate_password;
-pub use text::{process_sign, process_verify};
+pub use text::{process_generate_key, process_sign, process_verify};

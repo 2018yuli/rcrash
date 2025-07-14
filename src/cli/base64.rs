@@ -23,7 +23,7 @@ pub struct EncodeOpts {
 pub struct DecodeOpts {
     #[arg(long, value_parser=verify_file, default_value="-", help = "The base64 string to decode")]
     pub input: String,
-    #[arg(long, value_parser = parse_base64_formart, default_value = "uri")]
+    #[arg(long, value_parser = parse_base64_formart, default_value = "standard")]
     pub format: Base64Format,
 }
 

@@ -1,6 +1,5 @@
 use anyhow::Ok;
 use rand::seq::{IndexedRandom, SliceRandom};
-use zxcvbn::zxcvbn;
 
 const UPPER: &[u8] = b"ABCDEFGHJKLMNPQRSTUVWXYZ";
 const LOWER: &[u8] = b"abcdefghijkmnopqrstuvwxyz";
@@ -13,7 +12,7 @@ pub fn process_generate_password(
     lower: bool,
     numbers: bool,
     symbols: bool,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<String> {
     let mut rng = rand::rng();
     let mut password = Vec::new();
     // Vec<u8> 常用于处理字节流，比如序列化、文件内容、网络数据等。
@@ -51,12 +50,5 @@ pub fn process_generate_password(
     // from_utf8_lossy: 将 &[u8] 类型的字节数组转换成 String，如果有非法 UTF-8 字节，就用 �（U+FFFD）代替
     let password = String::from_utf8(password)?;
 
-    println!("{password}");
-
-    // 打印密码强度
-    let estimate = zxcvbn(&password, &[]);
-    // 打印到 stderr 中，便于 pipeline 纯净输出
-    eprintln!("strength: {}", estimate.score());
-
-    Ok(())
+    Ok(password)
 }
