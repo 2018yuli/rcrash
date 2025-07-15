@@ -221,6 +221,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "deno_console"
+version = "0.210.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4c510232a443e1c54c145ca5eda3376497dc24b23f589d6cb2ab71a4fb0ce4d2"
+dependencies = [
+ "deno_core",
+]
+
+[[package]]
 name = "deno_core"
 version = "0.352.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -967,6 +976,7 @@ name = "rcrash"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "deno_console",
  "deno_core",
  "serde",
  "serde_v8",
