@@ -7,11 +7,18 @@ license = "MIT"
 
 [dependencies]
 anyhow = "1.0.98"
-deno_core = { version = "0.352.0" }
-deno_console = "0.210.0"
-serde = { version = "1.0.219", features = ["derive"] }
-serde_v8 = { version = "0.261.0" }
-tokio = { version = "1.46.1", features = ["rt"] }
+dashmap = "5.5.3"
+oneshot = "0.1.6"
+rand = "0.8.5"
+tokio = { version = "1.37.0", features = [
+    "rt",
+    "rt-multi-thread",
+    "macros",
+    "net",
+    "io-util",
+] }
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 
 [workspace]
 
