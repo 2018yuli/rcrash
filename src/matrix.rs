@@ -1,10 +1,18 @@
 // [[1,2],[1,2],[1,2]] => [1, 2, 1, 2, 1, 2]
 // 扁平化后，效率更高，对比二维数组的双指针结构
 
+use crate::vector::{Msg, MsgInput, MsgOutput};
+
+use super::vector::{dot_product, Vector};
 use std::{
+    any,
     fmt::{self, Debug, Display},
     ops::{Add, AddAssign, Mul},
+    sync::mpsc,
+    thread,
 };
+
+const NUM_THREADS: usize = 2;
 
 pub struct Matrix<T: Debug> {
     data: Vec<T>,
@@ -60,18 +68,60 @@ where
 
 pub fn mutiply_matrix<T>(a: &Matrix<T>, b: &Matrix<T>) -> anyhow::Result<Matrix<T>>
 where
-    T: Debug + Mul<Output = T> + Add<Output = T> + AddAssign + Copy + Default,
+    T: Debug + Mul<Output = T> + Add<Output = T> + AddAssign + Copy + Default + Send + 'static,
 {
     if a.col != b.row {
         return Err(anyhow::Error::msg("维度不匹配"));
     }
-    let mut data = vec![T::default(); a.row * b.col];
+    let matrix_len = a.row * b.col;
+
+    // multiple threading
+    let senders = (0..NUM_THREADS)
+        .map(|_| {
+            let (tx, rx) = mpsc::channel::<Msg<T>>();
+            thread::spawn(move || {
+                for msg in rx {
+                    let value = dot_product(msg.input.row, msg.input.col)?;
+                    if let Err(e) = msg.sender.send(MsgOutput {
+                        idx: msg.input.idx,
+                        value,
+                    }) {
+                        eprintln!("Sender error: {}", e.to_string())
+                    }
+                }
+                Ok::<_, anyhow::Error>(())
+            });
+            tx
+        })
+        .collect::<Vec<_>>();
+    let mut receivers = Vec::with_capacity(matrix_len);
+
+    let mut data = vec![T::default(); matrix_len];
     for i in 0..a.row {
         for j in 0..b.col {
-            for k in 0..a.col {
-                data[i * b.col + j] += a.data[i * a.col + k] * b.data[k * b.col + j];
+            let row = Vector::new(&a.data[i * a.col..(i + 1) * a.col]);
+            let col_data = b.data[j..]
+                .iter()
+                .step_by(b.col)
+                .copied()
+                .collect::<Vec<_>>();
+            let col = Vector::new(col_data);
+            // send to thread
+            let idx = i * b.col + j;
+            let input = MsgInput::new(idx, row, col);
+            // ?
+            let (tx, rx) = oneshot::channel();
+            let msg = Msg::new(input, tx);
+            if let Err(e) = senders[idx % NUM_THREADS].send(msg) {
+                eprintln!("Sender error: {}", e.to_string());
             }
+            receivers.push(rx);
         }
+    }
+
+    for rx in receivers {
+        let ret = rx.recv()?;
+        data[ret.idx] = ret.value;
     }
 
     let result = Matrix {
@@ -79,10 +129,19 @@ where
         row: a.row,
         col: b.col,
     };
-    Ok(result)
+    anyhow::Ok(result)
 }
 
+impl<T> Mul for Matrix<T>
+where
+    T: Debug + Mul<Output = T> + Add<Output = T> + AddAssign + Copy + Default + Send + 'static,
+{
+    type Output = Self;
 
+    fn mul(self, rhs: Self) -> Self::Output {
+        mutiply_matrix(&self, &rhs).expect("Matrix multiply error")
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -99,5 +158,34 @@ mod tests {
         );
 
         Ok(())
+    }
+
+    #[test]
+    fn test_mutiply_with_symbol() -> anyhow::Result<()> {
+        let a = Matrix::new(vec![1, 2, 3, 4], 2, 2);
+        let b = Matrix::new(vec![5, 6, 7, 8], 2, 2);
+        let c = a * b;
+        assert_eq!(
+            format!("{c:?}"),
+            "Matrix { row: 2, col: 2, { 19  22 , 43  50 } }"
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_a_can_not_mutiply_b() {
+        let a = Matrix::new(vec![1, 2, 3, 4], 2, 2);
+        let b = Matrix::new(vec![5, 6, 7], 3, 1);
+        let c = mutiply_matrix(&a, &b);
+        assert!(c.is_err());
+    }
+
+    #[test]
+    #[should_panic(expected = "维度不匹配")]
+    fn test_a_can_not_mutiply_panic() {
+        let a = Matrix::new(vec![1, 2, 3, 4], 2, 2);
+        let b = Matrix::new(vec![5, 6, 7], 3, 1);
+        let _c = a * b;
     }
 }
