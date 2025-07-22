@@ -15,6 +15,7 @@ impl<T: Debug> Vector<T> {
     pub fn len(&self) -> usize {
         self.data.len()
     }
+    #[allow(dead_code)]
     pub fn iter(&self) -> impl Iterator<Item = &T> {
         self.data.iter()
     }

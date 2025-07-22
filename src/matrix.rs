@@ -5,7 +5,6 @@ use crate::vector::{Msg, MsgInput, MsgOutput};
 
 use super::vector::{dot_product, Vector};
 use std::{
-    any,
     fmt::{self, Debug, Display},
     ops::{Add, AddAssign, Mul},
     sync::mpsc,

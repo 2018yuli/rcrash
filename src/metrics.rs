@@ -15,7 +15,7 @@ impl Metrics {
             data: Arc::new(Mutex::new(HashMap::new())),
         }
     }
-    pub fn inc(&mut self, key: impl Into<String>) -> anyhow::Result<()> {
+    pub fn inc(&self, key: impl Into<String>) -> anyhow::Result<()> {
         let mut data = self
             .data
             .lock()
@@ -25,7 +25,7 @@ impl Metrics {
         Ok(())
     }
 
-    pub fn dec(&mut self, key: impl Into<String>) -> anyhow::Result<()> {
+    pub fn dec(&self, key: impl Into<String>) -> anyhow::Result<()> {
         let mut data = self
             .data
             .lock()
