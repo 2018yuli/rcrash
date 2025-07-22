@@ -7,7 +7,7 @@ use std::{
 // 基本功能，inc/dec/snapshot
 #[derive(Debug, Clone)]
 pub struct Metrics {
-    data: Arc<RwLock<LinkedHashMap<String, i64>>>,
+    data: Arc<RwLock<HashMap<String, i64>>>,
 }
 
 impl Metrics {
