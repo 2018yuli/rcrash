@@ -7,11 +7,16 @@ license = "MIT"
 
 [dependencies]
 anyhow = "1.0.98"
+blake3 = "1.8.2"
+byteorder = "1.5.0"
 dashmap = "5.5.3"
 oneshot = "0.1.6"
 rand = "0.8.5"
 tokio = { version = "1.37.0", features = [
     "rt",
+    "fs",
+    "time",
+    "sync",
     "rt-multi-thread",
     "macros",
     "net",
@@ -27,3 +32,6 @@ opt-level = 3     # 最强的优化级别
 lto = true        # 启用链接时优化（LTO）
 panic = "abort"   # 设置 panic 处理策略（避免额外的栈展开开销）
 codegen-units = 1 # 限制代码生成单元数量
+
+[dev-dependencies]
+bytes = "1.10.1"
