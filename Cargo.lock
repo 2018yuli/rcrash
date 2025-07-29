@@ -347,7 +347,6 @@ dependencies = [
  "anyhow",
  "blake3",
  "byteorder",
- "bytes",
  "dashmap",
  "oneshot",
  "rand",
