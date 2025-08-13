@@ -28,10 +28,6 @@ winnow = { version = "0.7.12", features = ["simd"] }
 [dev-dependencies]
 criterion = { version = "0.7.0", features = ["html_reports"] }
 
-[[bench]]
-name = "resp"
-harness = false
-
 [profile.release]
 opt-level = 3     # 最强的优化级别
 lto = true        # 启用链接时优化（LTO）

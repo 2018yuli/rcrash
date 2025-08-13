@@ -58,3 +58,6 @@
 //     warn!("Dredis: connection closed by {}", raddr);
 //     Ok(())
 // }
+fn main() {
+    println!("")
+}
